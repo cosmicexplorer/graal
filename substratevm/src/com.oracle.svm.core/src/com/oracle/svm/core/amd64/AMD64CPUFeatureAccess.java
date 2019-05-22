@@ -166,17 +166,17 @@ public class AMD64CPUFeatureAccess implements CPUFeatureAccess {
 
     @Override
     public void verifyHostSupportsArchitecture(Architecture imageArchitecture) {
-        AMD64 architecture = (AMD64) imageArchitecture;
-        EnumSet<AMD64.CPUFeature> features = determineHostCPUFeatures();
+        // AMD64 architecture = (AMD64) imageArchitecture;
+        // EnumSet<AMD64.CPUFeature> features = determineHostCPUFeatures();
 
-        if (!features.containsAll(architecture.getFeatures())) {
-            List<AMD64.CPUFeature> missingFeatures = new ArrayList<>();
-            for (AMD64.CPUFeature feature : architecture.getFeatures()) {
-                if (!features.contains(feature)) {
-                    missingFeatures.add(feature);
-                }
-            }
-            throw VMError.shouldNotReachHere("Current target does not support the following CPU features that are required by the image: " + missingFeatures);
-        }
+        // if (!features.containsAll(architecture.getFeatures())) {
+        //     List<AMD64.CPUFeature> missingFeatures = new ArrayList<>();
+        //     for (AMD64.CPUFeature feature : architecture.getFeatures()) {
+        //         if (!features.contains(feature)) {
+        //             missingFeatures.add(feature);
+        //         }
+        //     }
+        //     throw VMError.shouldNotReachHere("Current target does not support the following CPU features that are required by the image: " + missingFeatures);
+        // }
     }
 }

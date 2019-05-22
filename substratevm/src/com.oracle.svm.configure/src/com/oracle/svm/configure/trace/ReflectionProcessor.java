@@ -171,7 +171,9 @@ class ReflectionProcessor extends AbstractProcessor {
             case "getEnclosingConstructor":
             case "getEnclosingMethod": {
                 String result = (String) entry.get("result");
-                addFullyQualifiedDeclaredMethod(result);
+                if (result != null) {
+                    addFullyQualifiedDeclaredMethod(result);
+                }
                 break;
             }
 

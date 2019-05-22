@@ -67,6 +67,8 @@ public final class ConfigurationDirectories {
             Path path = Paths.get(directory, fileName);
             if (Files.exists(path)) {
                 files.add(path.toString());
+            } else {
+                throw new RuntimeException("???: " + path.toString());
             }
         }
         return files;
