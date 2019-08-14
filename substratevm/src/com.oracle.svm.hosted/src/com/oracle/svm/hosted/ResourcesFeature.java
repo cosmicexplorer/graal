@@ -35,12 +35,14 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 import org.graalvm.compiler.debug.DebugContext;
 import org.graalvm.compiler.options.Option;
@@ -75,6 +77,7 @@ public final class ResourcesFeature implements Feature {
 
     private boolean sealed = false;
     private Set<String> newResources = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static HashMap<File, JarFile> cachedClasspathJarFiles = new HashMap<>();
 
     public interface ResourcesRegistry {
         void addResources(String pattern);
@@ -153,7 +156,7 @@ public final class ResourcesFeature implements Feature {
                     if (element.isDirectory()) {
                         scanDirectory(debugContext, element, "", pattern);
                     } else {
-                        scanJar(debugContext, element, pattern);
+                        scanJar(debugContext, element, regExp);
                     }
                 } catch (IOException ex) {
                     throw UserError.abort("Unable to handle classpath element '" + element + "'. Make sure that all classpath entries are either directories or valid jar files.");
@@ -192,21 +195,19 @@ public final class ResourcesFeature implements Feature {
     }
 
     @SuppressWarnings("try")
-    private static void scanJar(DebugContext debugContext, File element, Pattern... patterns) throws IOException {
-        JarFile jf = new JarFile(element);
-        Enumeration<JarEntry> en = jf.entries();
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            if (e.getName().endsWith("/")) {
-                continue;
-            }
-            if (matches(patterns, e.getName())) {
-                try (InputStream is = jf.getInputStream(e)) {
-                    try (DebugContext.Scope s = debugContext.scope("registerResource")) {
-                        debugContext.log("ResourcesFeature: registerResource: " + e.getName());
-                    }
-                    Resources.registerResource(e.getName(), is);
+    private static void scanJar(DebugContext debugContext, File element, String path) throws IOException {
+        JarFile jf = cachedClasspathJarFiles.get(element);
+        if (jf == null) {
+            jf = new JarFile(element);
+            cachedClasspathJarFiles.put(element, jf);
+        }
+        ZipEntry ze = jf.getEntry(path);
+        if (ze != null) {
+            try (InputStream is = jf.getInputStream(ze)) {
+                try (DebugContext.Scope s = debugContext.scope("registerResource")) {
+                    debugContext.log("ResourcesFeature: registerResource: " + path);
                 }
+                Resources.registerResource(path, is);
             }
         }
     }
