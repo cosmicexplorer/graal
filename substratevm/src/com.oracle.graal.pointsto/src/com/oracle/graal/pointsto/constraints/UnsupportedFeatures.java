@@ -67,8 +67,11 @@ public class UnsupportedFeatures {
 
     private final ConcurrentHashMap<String, Data> messages;
 
+    private final ConcurrentHashMap<String, Data> realMessages;
+
     public UnsupportedFeatures() {
         messages = new ConcurrentHashMap<>();
+        realMessages = new ConcurrentHashMap<>();
     }
 
     public void addMessage(String key, AnalysisMethod method, String message) {
@@ -83,6 +86,8 @@ public class UnsupportedFeatures {
      * @param originalException The exception that originally caused this unsupported feature.
      */
     public void addMessage(String key, AnalysisMethod method, String message, String trace, Throwable originalException) {
+        // NB: drop all messages!
+        // realMessages.putIfAbsent(key, new Data(key, method, message, trace, originalException));
         messages.putIfAbsent(key, new Data(key, method, message, trace, originalException));
     }
 
